@@ -14,8 +14,7 @@ pub enum TokenType {
 #[derive(Debug, Clone)]
 pub enum TokenValue {
     Integer(i64),
-    Float(f64),
-    String(String)
+    String(String),
 }
 
 #[derive(Debug, Clone)]
@@ -27,7 +26,7 @@ struct TokenMatcher {
 #[derive(Debug)]
 pub struct Token {
     token_type: TokenType,
-    value: String,
+    value: TokenValue,
 }
 
 #[derive(Debug)]
@@ -45,7 +44,7 @@ impl<'a> Lexer<'a> {
         let tokens = Vec::new();
         let token_matchers: Vec<TokenMatcher> = vec![
             TokenMatcher { token_type: TokenType::SEMICOLON, pattern: "^;".to_string() },
-            TokenMatcher { token_type: TokenType::INT, pattern: "^\\d+".to_string() },
+            TokenMatcher { token_type: TokenType::INT, pattern: "^(\\d+)".to_string() },
             TokenMatcher { token_type: TokenType::PLUS, pattern: "^\\+".to_string() },
             TokenMatcher { token_type: TokenType::MINUS, pattern: "^-".to_string() },
             TokenMatcher { token_type: TokenType::EQUALS, pattern: "^=".to_string() },
@@ -65,11 +64,7 @@ impl<'a> Lexer<'a> {
 
 
     fn get_token(&mut self) -> Option<Token> {
-        // self.tokens.push(Token { token_type: TokenType::INT })
-
-        // https://docs.rs/regex/latest/regex/struct.RegexSet.html#limitations
-        // let patterns = ["^\\d+", "^\".*\""];
-
+        // EOF
         if self.pos >= self.size {
             return None;
         }
@@ -96,7 +91,19 @@ impl<'a> Lexer<'a> {
         let regex_match = regex.find(src).unwrap();
         let value = regex_match.as_str().to_string();
 
+        // advance position
         self.pos += value.len();
+
+        // parse value
+        let value: TokenValue = match token_type {
+            TokenType::INT => TokenValue::Integer(value.parse::<i64>().unwrap()),
+            TokenType::PLUS => TokenValue::String(value),
+            TokenType::MINUS => TokenValue::String(value),
+            TokenType::EQUALS => TokenValue::String(value),
+            TokenType::VAR => TokenValue::String(value),
+            TokenType::SEMICOLON => TokenValue::String(value),
+            TokenType::STRING => TokenValue::String(value),
+        };
 
         Some(Token { token_type, value })
     }
