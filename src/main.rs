@@ -5,7 +5,7 @@ mod lexer;
 mod parser;
 
 fn main() {
-    let src = "12+4;";
+    let src = "12 + 4;";
     let mut lexer = Lexer::new(src);
     println!("Source: {}", lexer.src);
     lexer.tokenize();

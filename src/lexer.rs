@@ -1,6 +1,6 @@
 use regex::{Regex, RegexSet};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TokenType {
     INT,
     PLUS,
@@ -9,6 +9,7 @@ pub enum TokenType {
     VAR,
     SEMICOLON,
     STRING,
+    WHITESPACE,
 }
 
 #[derive(Debug, Clone)]
@@ -23,10 +24,10 @@ struct TokenMatcher {
     pattern: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
-    token_type: TokenType,
-    value: TokenValue,
+    pub token_type: TokenType,
+    pub value: TokenValue,
 }
 
 #[derive(Debug)]
@@ -50,6 +51,7 @@ impl<'a> Lexer<'a> {
             TokenMatcher { token_type: TokenType::EQUALS, pattern: "^=".to_string() },
             TokenMatcher { token_type: TokenType::VAR, pattern: "^[a-zA-Z][a-zA-Z0-9_-]+".to_string() },
             TokenMatcher { token_type: TokenType::STRING, pattern: "^\".*\"".to_string() },
+            TokenMatcher { token_type: TokenType::WHITESPACE, pattern: "^\\s+".to_string() },
         ];
 
         Self { src, tokens, token_matchers, pos: 0, size: src.len() }
@@ -103,6 +105,7 @@ impl<'a> Lexer<'a> {
             TokenType::VAR => TokenValue::String(value),
             TokenType::SEMICOLON => TokenValue::String(value),
             TokenType::STRING => TokenValue::String(value),
+            TokenType::WHITESPACE => TokenValue::String("".to_string()),
         };
 
         Some(Token { token_type, value })
